@@ -1,0 +1,153 @@
+<!DOCTYPE html> 
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculatrice de Rentabilité de l'Adhésion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        h2 {
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input[type="number"], input[type="text"], input[type="checkbox"], select {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Simulation Rentabilité de l'Adhésion CSE</h2>
+        
+        <label for="ca">Votre CA (€) :</label>
+        <input type="number" id="ca" placeholder="Ex: 100000">
+        
+        <label for="economiesPersonnelles">Économies personnelles (€) :</label>
+        <input type="number" id="economiesPersonnelles" value="1296" disabled>
+        
+        <label for="achatsAlimentaires">Achats alimentaires (économies de 10%) (€) :</label>
+        <input type="number" id="achatsAlimentaires" placeholder="Ex: 2500">
+        
+        <label for="chargesFixes">Charges fixes (économies de 25%) (€) :</label>
+        <input type="number" id="chargesFixes" placeholder="Ex: 2750">
+        
+        <label for="masseSalariale">Masse salariale (€) :</label>
+        <input type="number" id="masseSalariale" placeholder="Ex: 70000">
+        
+        <label for="nombreEmployes">Nombre d'employés :</label>
+        <input type="number" id="nombreEmployes" placeholder="Ex: 2">
+        
+        <label for="adhesionTarif">Choisissez votre tarif d'adhésion :</label>
+        <select id="adhesionTarif">
+            <option value="240">240 €</option>
+            <option value="360">360 €</option>
+            <option value="480" selected>480 €</option>
+            <option value="600">600 €</option>
+        </select>
+        
+        <label for="fraisCse">Frais de mise en place CSE (€) :</label>
+        <input type="number" id="fraisCse" value="690" disabled>
+        
+        <label for="suiviCse">Suivi annuel CSE (€) :</label>
+        <input type="number" id="suiviCse" value="380" disabled>
+        
+        <label for="inclureCse">
+            <input type="checkbox" id="inclureCse"> Inclure l'adhésion CSE ?
+        </label>
+        
+        <button onclick="calculateRentabilite()">Calculer la rentabilité</button>
+        
+        <div class="result" id="result">Total des économies : -</div>
+        <div class="result" id="rentabilite">Rentabilité de l'adhésion : -</div>
+    </div>
+    
+    <script>
+        function calculateRentabilite() {
+            // Récupérer les valeurs des inputs
+            const ca = parseFloat(document.getElementById('ca').value) || 0;
+            const achatsAlimentaires = parseFloat(document.getElementById('achatsAlimentaires').value) || 0;
+            const chargesFixes = parseFloat(document.getElementById('chargesFixes').value) || 0;
+            const masseSalariale = parseFloat(document.getElementById('masseSalariale').value) || 0;
+            const nombreEmployes = parseFloat(document.getElementById('nombreEmployes').value) || 0;
+            const adhesionTarif = parseFloat(document.getElementById('adhesionTarif').value) || 480;  // Valeur du tarif choisi
+            const fraisCse = parseFloat(document.getElementById('fraisCse').value) || 0;
+            const suiviCse = parseFloat(document.getElementById('suiviCse').value) || 0;
+            const inclureCse = document.getElementById('inclureCse').checked;
+
+            // Calcul des économies
+            const economieAchatsAlimentaires = achatsAlimentaires * 0.10;
+            const economieChargesFixes = chargesFixes * 0.25;
+            const economieMasseSalariale = masseSalariale * 0.07;
+
+            const totalEconomies = economieAchatsAlimentaires + economieChargesFixes + economieMasseSalariale;
+
+            // Calcul du tarif par salarié pour l'adhésion CSE
+            let tarifParSalarie = 108;  // Par défaut, pour moins de 50 salariés
+            if (nombreEmployes > 50) {
+                tarifParSalarie = 84;  // Pour plus de 50 salariés
+            }
+
+            // Calcul du coût total d'adhésion CSE
+            const totalAdhesionCse = fraisCse + suiviCse + (nombreEmployes * tarifParSalarie);
+
+            // Calcul de la rentabilité
+            let rentabiliteSansCse = totalEconomies / adhesionTarif;
+            let rentabiliteAvecCse = 0;
+
+            if (inclureCse) {
+                rentabiliteAvecCse = totalEconomies / totalAdhesionCse;
+                document.getElementById('rentabilite').innerText = `Rentabilité de l'adhésion avec CSE : ${rentabiliteAvecCse.toFixed(2)} fois`;
+            } else {
+                rentabiliteSansCse = totalEconomies / adhesionTarif;
+                document.getElementById('rentabilite').innerText = `Rentabilité de l'adhésion sans CSE : ${rentabiliteSansCse.toFixed(2)} fois`;
+            }
+
+            // Afficher les résultats
+            document.getElementById('result').innerText = `Total des économies : ${totalEconomies.toFixed(2)} €`;
+        }
+    </script>
+</body>
+</html>
